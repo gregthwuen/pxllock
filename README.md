@@ -10,7 +10,7 @@ Just download or fork this repo and copy the `pxllock` script to a location like
 To automatically launch it you can use tools like xss-lock or xautolock, please look up their man pages for further info.
 
 ## Usage
-`pxllock <imagemaagick|maim|ffmpeg> <i3lock|xsecurelock> [locker arguments]`
+`pxllock <imagemagick|maim|ffmpeg> <i3lock|xsecurelock> [locker arguments]`
 
 ## Dependencies
 - screenshot & pixelation:
