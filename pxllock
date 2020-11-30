@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+tmpbg=/tmp/pxllock.png
+
+# if xsecurelock is showing, set "$tmpbg" as its background
+[[ -z "$XSCREENSAVER_WINDOW" ]] || exec xloadimage -windowid "0x$(printf '%x' "$XSCREENSAVER_WINDOW")" "$tmpbg"
+
+usage="pxllock <imagemaagick|maim|ffmpeg> <i3lock|xsecurelock> [locker arguments]"
+
+# screenshot and pixelize
+case "$1" in
+    ffmpeg)
+        ffmpeg -loglevel quiet -f x11grab -draw_mouse 0 -i "$DISPLAY" -vf scale=iw/10:ih/10,scale=iw*10:ih*10:flags=neighbor -frames:v 1 -y "$tmpbg"
+        shift
+        ;;
+    imagemagick)
+        import -window root "$tmpbg"
+        convert "$tmpbg" -scale 10% -scale 1000% "$tmpbg"
+        shift
+        ;;
+    maim)
+        maim -u -m 1 "$tmpbg"
+        convert "$tmpbg" -scale 10% -scale 1000% "$tmpbg"
+        shift
+        ;;
+    *)
+        echo "$usage"
+        exit 1
+        ;;
+esac
+
+# chose locker
+case "$1" in
+    i3lock)
+        exec "$@" -i "$tmpbg"
+        ;;
+    xsecurelock)
+        XSECURELOCK_SAVER=$0 exec "$@"
+        ;;
+    *)
+        echo "$usage"
+        exit 1
+        ;;
+esac
