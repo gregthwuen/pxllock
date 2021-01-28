@@ -2,15 +2,18 @@
 
 tmpbg=/tmp/pxllock.png
 
-# if xsecurelock is showing, set "$tmpbg" as its background
-[[ -z "$XSCREENSAVER_WINDOW" ]] || exec xloadimage -windowid "0x$(printf '%x' "$XSCREENSAVER_WINDOW")" "$tmpbg"
+# if started by xsecurelock, set $tmpbg as its background
+[[ ! -z "$XSCREENSAVER_WINDOW" ]] &&
+    exec xloadimage -windowid "0x$(printf '%x' "$XSCREENSAVER_WINDOW")" "$tmpbg"
 
 usage="pxllock <imagemaagick|maim|ffmpeg> <i3lock|xsecurelock> [locker arguments]"
 
 # screenshot and pixelize
 case "$1" in
     ffmpeg)
-        ffmpeg -loglevel quiet -f x11grab -draw_mouse 0 -i "$DISPLAY" -vf scale=iw/10:ih/10,scale=iw*10:ih*10:flags=neighbor -frames:v 1 -y "$tmpbg"
+        ffmpeg -loglevel quiet -f x11grab -draw_mouse 0 -i "$DISPLAY" \
+            -vf scale=iw/10:ih/10,scale=iw*10:ih*10:flags=neighbor \
+            -frames:v 1 -y "$tmpbg"
         shift
         ;;
     imagemagick)
@@ -29,13 +32,19 @@ case "$1" in
         ;;
 esac
 
+is_paused="$(dunstctl is-paused)"
+
 # chose locker
 case "$1" in
     i3lock)
-        exec "$@" -i "$tmpbg"
+        [[ "$is_paused" = false ]] && dunstctl set-paused true
+        "$@" -i "$tmpbg"
+        [[ "$is_paused" = false ]] && dunstctl set-paused false
         ;;
     xsecurelock)
-        XSECURELOCK_SAVER=$0 exec "$@"
+        [[ "$is_paused" = false ]] && dunstctl set-paused true
+        XSECURELOCK_SAVER=$0 "$@"
+        [[ "$is_paused" = false ]] && dunstctl set-paused false
         ;;
     *)
         echo "$usage"
