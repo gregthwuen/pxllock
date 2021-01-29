@@ -38,7 +38,7 @@ is_paused="$(dunstctl is-paused)"
 case "$1" in
     i3lock)
         [[ "$is_paused" = false ]] && dunstctl set-paused true
-        "$@" -i "$tmpbg"
+        "$@" --nofork -i "$tmpbg"
         [[ "$is_paused" = false ]] && dunstctl set-paused false
         ;;
     xsecurelock)
